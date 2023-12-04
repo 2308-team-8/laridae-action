@@ -5,15 +5,14 @@ MIGRATION_SCRIPT_FILENAME = "#{__dir__}/../../migration_script/laridae_migration
 
 # add check for if file doesn't exist
 migration_json = JSON.parse(File.read(MIGRATION_SCRIPT_FILENAME))
-migration_name = migration_json["name"]
 
 def new_database_url(database_url, migration_script_json)
   migration_name = migration_script_json["name"]
   schema = migration_script_json["info"]["schema"]
   if database_url.include?('?')
-    "#{database_url}&options=-csearch_path%3Dlaridae_#{migration_name},#{migration_schema}"
+    "#{database_url}&options=-csearch_path%3Dlaridae_#{migration_name},#{schema}"
   else
-    "#{database_url}?options=-csearch_path%3Dlaridae_#{migration_name},#{migration_schema}"
+    "#{database_url}?options=-csearch_path%3Dlaridae_#{migration_name},#{schema}"
   end
 end
 
