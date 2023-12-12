@@ -1,25 +1,16 @@
 name: "laridae-postgres-db-schema-migrations"
-description: "Expands/contracts db schema laridae and deploys new application code to ECS."
+description: "Reversible, zero-downtime schema migrations in PostgreSQL"
 inputs:
-  action:
-    description: "expand (db schema using laridae) / deploy (new code to Fargate) / contract (db schema using laridae) / full"
-    required: true
-  aws-access-key-id:
-    description: "AWS access key Id"
-    required: true
-  aws-secret-access-key:
-    description: "AWS secret access key"
-    required: true
-  aws-region:
-    description: "AWS region"
+  command:
+    description: "expand/contract"
     required: true
   aws-resource-names:
-    description: "Resource names in AWS"
+    description: "Resource names in AWS output from initialization script"
     required: true
 runs:
   using: composite
   steps:
-    - if: ${{ inputs.action == 'deploy' || inputs.action == 'full' }}
+    - if: ${{ inputs.command == 'sample-deploy' }}
       name: Check out application code.
       uses: actions/checkout@v4
       with:
@@ -45,19 +36,19 @@ runs:
         RESOURCE_NAMES: ${{ inputs.aws-resource-names }}
       run: ruby scripts/scripts/authenticate.rb
       shell: bash
-    - if: ${{ inputs.action == 'expand' || inputs.action == 'full' }}
+    - if: ${{ inputs.command == 'expand' || }}
       name: Spin up ECS task running laridae to expand
       env:
         RESOURCE_NAMES: ${{ inputs.aws-resource-names }}
       run: ruby scripts/scripts/spin_up_ecs.rb expand
       shell: bash
-    - if: ${{ inputs.action == 'deploy' || inputs.action == 'full'}}
+    - if: ${{ inputs.command == 'sample-deploy' }}
       name: Deploy new code to Fargate
       env:
         RESOURCE_NAMES: ${{ inputs.aws-resource-names }}
       run: ruby scripts/scripts/redeploy.rb
       shell: bash
-    - if: ${{ inputs.action == 'contract' || inputs.action == 'full' }}
+    - if: ${{ inputs.command == 'contract' }}
       name: Spin up ECS task running laridae to contract
       env:
         RESOURCE_NAMES: ${{ inputs.aws-resource-names }}
